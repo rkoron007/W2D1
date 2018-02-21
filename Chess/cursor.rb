@@ -1,5 +1,6 @@
 require "io/console"
 require "colorize"
+require "byebug"
 require_relative "board.rb"
 
 
@@ -35,11 +36,12 @@ MOVES = {
 
 class Cursor
 
-  attr_reader :cursor_pos, :board
+  attr_reader :cursor_pos, :board, :selected
 
   def initialize(cursor_pos, board)
     @cursor_pos = cursor_pos
     @board = board
+    @selected = false
   end
 
   def get_input
@@ -80,9 +82,10 @@ class Cursor
 
   def handle_key(key)
     case key
-    when :return || :space
+    when :return,  :space
+      @selected = !@selected
       @cursor_pos
-    when :left || :right || :up || :down
+    when :down, :left, :right, :up
       update_pos(MOVES[key])
       nil
     when :ctrl_c
@@ -94,7 +97,11 @@ class Cursor
   def update_pos(diff)
    row =   @cursor_pos[0] + diff[0]
    col =  @cursor_pos[1] + diff[1]
-   if @board.valid_pos(diff)
+
+  raise ArgumentError unless board.on_the_board?([row,col])
+   @cursor_pos = [row,col]
+
+   if @selected == true && @board.valid_pos?(diff)
      @cursor_pos = [row,col]
    end
   end

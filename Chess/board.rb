@@ -1,11 +1,34 @@
+# require_relative "pieces.rb"
+require_relative "rook.rb"
+require_relative "knight.rb"
+require_relative "bishop.rb"
+require_relative "king.rb"
+require_relative "queen.rb"
+require_relative "null_piece.rb"
+require "byebug"
 
 class Board
+  MAIN_ROW = [Rook, Knight, Bishop, King, Queen, Bishop, Knight, Rook]
+
   attr_accessor :grid
   def initialize
-    @grid = Array.new(1){Array.new(8){Piece.new}} +
-    Array.new(1){Array.new(8){NullPiece.new}} +
-    Array.new(1){Array.new(8){Piece.new}}
+    @grid = Array.new(2){Array.new(8)} +
+    Array.new(4){Array.new(8, NullPiece.instance) }+
+    Array.new(2){Array.new(8)}
   end
+
+  def first_and_last_row
+    # byebug
+    @grid[0].each_with_index do |piece, i|
+      @grid[0][i] = MAIN_ROW[i].new(@grid, [0,i])
+    end
+    #
+    @grid[7].each_with_index do |piece, i|
+      @grid[7][i] = MAIN_ROW[i].new(@grid, [7,i])
+    end
+  end
+
+
 
   def [](pos)
     row,col = pos
@@ -30,29 +53,22 @@ class Board
     self[start_pos] = NullPiece.new
   end
 
+  def on_the_board?(pos)
+    possible_length = (0..7).to_a
+    return false unless possible_length.include?(pos[0])
+    return false unless possible_length.include?(pos[1])
+    true
+  end
+
   def valid_pos?(pos)
-    self[pos].class == NullPiece
+    return false unless on_the_board?(pos)
+    self[pos].class == Piece
   end
 
 end
 
-class Piece
-  attr_reader :val
-  def initialize(val = "x")
-    @val = val
-  end
+t = Board.new
 
-  def inspect
-    "#{val}"
-  end
-end
+t.first_and_last_row
 
-class NullPiece < Piece
-  def initialize
-    super("o")
-  end
-
-  def inspect
-  "#{val}"
-  end
-end
+p t.grid
